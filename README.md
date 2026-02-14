@@ -118,4 +118,9 @@ mvn spring-boot:run
 3. Open browser at
 ```bash http://localhost:5173 ```
 
- 
+
+## Future Changes or Improvements 
+- Adding admin or user roles for users to manage restrictions and realism
+- Email verification on registration via link or OTP
+- Password reset functionality
+- User profile page customization and avatar support
