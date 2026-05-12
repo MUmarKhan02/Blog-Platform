@@ -1,0 +1,27 @@
+Project Scanner Report
+Generated: 2026-05-11 4:12:55 PM
+Project Path: C:\Users\Umar_\Coding-Languages\Spring_Boot\Blog Platform
+==================================================
+
+Stack Detected: Node.js / JavaScript + Java / Maven
+
+How to run this project:
+==================================================
+  Step 1: Open a terminal in the project folder
+  Step 2: Run: npm install
+  Step 3: Run: npm run dev
+  Step 4: Run: npm run build
+  Step 5: Run: npm run lint
+  Step 6: Run: npm run preview
+  Step 7: Run: npm run clean
+  Step 8: Run: mvn install
+  Step 9: Run: mvn spring-boot:run   (or mvn exec:java if not Spring)
+  Step 10: Docker detected — alternatively run: docker-compose up
+
+Requires 3 terminal(s):
+  Terminal 1: npm run dev
+  Terminal 2: mvn spring-boot:run
+  Terminal 3: docker-compose up
+
+Ports:
+  http://localhost:5173  (Vite default)

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useNavigation } from 'react-router-dom';
 import { Card, CardBody, CardFooter, CardHeader, Chip, Pagination, Select, SelectItem } from '@nextui-org/react';
 import { Post } from '../services/apiService';
-import { Calendar, Clock, Tag } from 'lucide-react';
+import { Calendar, Clock, Tag, BookOpen } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 interface PostListProps {
@@ -108,17 +108,31 @@ const PostList: React.FC<PostListProps> = ({
           {[...Array(3)].map((_, index) => (
             <Card key={index} className="w-full animate-pulse">
               <CardBody>
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
               </CardBody>
             </Card>
           ))}
         </div>
       ) : (
         <>
+
+        {posts?.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-6 mb-4">
+              <BookOpen size={40} className="text-gray-400 dark:text-gray-500" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              No posts found
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 max-w-sm">
+              Try adjusting your search or filters to find what you're looking for.
+            </p>
+          </div>
+        )}
           <div className="space-y-4">
             {posts?.map((post) => (
-              <Card key={post.id} className="w-full p-2" isPressable={true} onPress={() => navToPostPage(post)}>
+              <Card key={post.id} className="w-full p-2 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer" isPressable={true} onPress={() => navToPostPage(post)}>
                 <CardHeader className="flex gap-3">                 
                     <div className='flex flex-col'>
                     <h2 className="text-xl font-bold text-left">

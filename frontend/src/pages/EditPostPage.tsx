@@ -9,6 +9,7 @@ import {
 import { ArrowLeft } from 'lucide-react';
 import { apiService, Post, Category, Tag, PostStatus } from '../services/apiService';
 import PostForm from '../components/PostForm';
+import toast from 'react-hot-toast';
 
 const EditPostPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,7 +40,9 @@ const EditPostPage: React.FC = () => {
 
         setError(null);
       } catch (err) {
-        setError('Failed to load necessary data. Please try again later.');
+        const msg = 'Failed to load necessary data. Please try again later.';
+        setError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }
@@ -55,22 +58,28 @@ const EditPostPage: React.FC = () => {
     tagIds: string[];
     status: PostStatus;
   }) => {
+    const isPublished = postData.status === 'PUBLISHED';
+    const toastId = toast.loading(
+      id ? 'Saving changes...' : isPublished ? 'Publishing post...' : 'Saving draft...'
+    );
+
     try {
       setIsSubmitting(true);
       setError(null);
 
       if (id) {
-        await apiService.updatePost(id, {
-          ...postData,
-          id
-        });
+        await apiService.updatePost(id, { ...postData, id });
+        toast.success('Post updated!', { id: toastId });
       } else {
         await apiService.createPost(postData);
+        toast.success(isPublished ? 'Post published!' : 'Draft saved!', { id: toastId });
       }
 
       navigate('/');
     } catch (err) {
-      setError('Failed to save the post. Please try again.');
+      const msg = 'Failed to save the post. Please try again.';
+      toast.error(msg, { id: toastId });
+      setError(msg);
       setIsSubmitting(false);
     }
   };

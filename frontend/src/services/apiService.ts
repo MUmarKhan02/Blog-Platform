@@ -119,14 +119,17 @@ class ApiService {
     return ApiService.instance;
   }
 
-  private handleError(error: AxiosError): ApiError {
+  private handleError(error: AxiosError): Error {
     if (error.response?.data) {
-      return error.response.data as ApiError;
+      const data = error.response.data as any;
+      const message = data.message || (
+        error.response.status === 409 ? 'An account with this email already exists.' :
+        error.response.status === 400 ? 'Invalid registration details.' :
+        'An unexpected error occurred'
+      );
+      return new Error(message);
     }
-    return {
-      status: 500,
-      message: 'An unexpected error occurred'
-    };
+    return new Error('An unexpected error occurred');
   }
 
   // Auth endpoints

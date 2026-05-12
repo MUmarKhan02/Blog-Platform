@@ -36,6 +36,10 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private String role = "USER";
+
     @OneToMany(mappedBy = "author",cascade = CascadeType.ALL,orphanRemoval=true)
     private List<Post> posts = new ArrayList<>();
 

@@ -21,22 +21,26 @@ import {
   Share
 } from 'lucide-react';
 import { apiService, Post } from '../services/apiService';
+import { useAuth } from '../components/AuthContext';
+import toast from 'react-hot-toast';
 
 interface PostPageProps {
   isAuthenticated?: boolean;
-  currentUserId?: string;
 }
 
-const PostPage: React.FC<PostPageProps> = ({ 
-  isAuthenticated,
-  currentUserId
-}) => {
+const PostPage: React.FC<PostPageProps> = ({ isAuthenticated }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [post, setPost] = useState<Post | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const isAdmin = user?.role === 'ADMIN';
+  const isAuthor = post?.author?.id === user?.id;
+  const canEditOrDelete = isAuthenticated && (isAdmin || isAuthor);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -57,15 +61,16 @@ const PostPage: React.FC<PostPageProps> = ({
   }, [id]);
 
   const handleDelete = async () => {
-    if (!post || !window.confirm('Are you sure you want to delete this post?')) {
-      return;
-    }
+    if (!post || !window.confirm('Are you sure you want to delete this post?')) return;
 
+    const toastId = toast.loading('Deleting post...');
     try {
       setIsDeleting(true);
       await apiService.deletePost(post.id);
+      toast.success('Post deleted!', { id: toastId });
       navigate('/');
     } catch (err) {
+      toast.error('Failed to delete the post.', { id: toastId });
       setError('Failed to delete the post. Please try again later.');
       setIsDeleting(false);
     }
@@ -79,8 +84,8 @@ const PostPage: React.FC<PostPageProps> = ({
         url: window.location.href,
       });
     } catch (err) {
-      // Fallback to copying URL
       navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard!');
     }
   };
 
@@ -95,8 +100,14 @@ const PostPage: React.FC<PostPageProps> = ({
   const createSanitizedHTML = (content: string) => {
     return {
       __html: DOMPurify.sanitize(content, {
-        ALLOWED_TAGS: ['p', 'strong', 'em', 'br'],
-        ALLOWED_ATTR: []
+        ALLOWED_TAGS: [
+          'p', 'strong', 'em', 'br',
+          'h1', 'h2', 'h3', 'h4',
+          'ul', 'ol', 'li',
+          'blockquote', 'code', 'pre',
+          'hr', 'a', 'span'
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
       })
     };
   };
@@ -155,7 +166,7 @@ const PostPage: React.FC<PostPageProps> = ({
               Back to Posts
             </Button>
             <div className="flex gap-2">
-              {isAuthenticated && (
+              {canEditOrDelete && (
                 <>
                   <Button
                     as={Link}
@@ -190,12 +201,9 @@ const PostPage: React.FC<PostPageProps> = ({
             </div>
           </div>
           <h1 className="text-3xl font-bold">{post.title}</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
-              <Avatar
-                name={post.author?.name}
-                size="sm"
-              />
+              <Avatar name={post.author?.name} size="sm" />
               <span className="text-default-600">{post.author?.name}</span>
             </div>
             <div className="flex items-center gap-2 text-default-500">
@@ -212,8 +220,24 @@ const PostPage: React.FC<PostPageProps> = ({
         <Divider />
 
         <CardBody>
-          <div 
-            className="prose max-w-none"
+          <div
+            className="
+              prose prose-neutral dark:prose-invert max-w-none
+              prose-h1:text-3xl prose-h1:font-bold prose-h1:mb-4 prose-h1:mt-2
+              prose-h2:text-2xl prose-h2:font-bold prose-h2:mb-3 prose-h2:mt-2
+              prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-2 prose-h3:mt-2
+              prose-p:mb-3 prose-p:leading-relaxed
+              prose-ul:list-disc prose-ul:pl-6 prose-ul:mb-3
+              prose-ol:list-decimal prose-ol:pl-6 prose-ol:mb-3
+              prose-li:mb-1
+              prose-strong:font-bold
+              prose-em:italic
+              prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400
+              prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+              prose-pre:bg-gray-100 dark:prose-pre:bg-gray-800 prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto
+              prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:underline
+              prose-hr:border-gray-200 dark:prose-hr:border-gray-700
+            "
             dangerouslySetInnerHTML={createSanitizedHTML(post.content)}
           />
         </CardBody>

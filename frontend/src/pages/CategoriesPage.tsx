@@ -21,12 +21,17 @@ import {
 } from "@nextui-org/react";
 import { Plus, Edit2, Trash2 } from "lucide-react";
 import { apiService, Category } from "../services/apiService";
+import { useAuth } from "../components/AuthContext";
+import toast from "react-hot-toast";
 
 interface CategoriesPageProps {
   isAuthenticated: boolean;
 }
 
 const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,47 +58,41 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
   };
 
   const handleAddEdit = async () => {
-    if (!newCategoryName.trim()) {
-      return;
-    }
+    if (!newCategoryName.trim()) return;
 
+    const toastId = toast.loading(
+      editingCategory ? "Updating category..." : "Creating category..."
+    );
     try {
       setIsSubmitting(true);
       if (editingCategory) {
-        await apiService.updateCategory(
-          editingCategory.id,
-          newCategoryName.trim()
-        );
+        await apiService.updateCategory(editingCategory.id, newCategoryName.trim());
+        toast.success("Category updated!", { id: toastId });
       } else {
         await apiService.createCategory(newCategoryName.trim());
+        toast.success("Category created!", { id: toastId });
       }
       await fetchCategories();
       handleModalClose();
     } catch (err) {
-      setError(
-        `Failed to ${
-          editingCategory ? "update" : "create"
-        } category. Please try again.`
-      );
+      toast.error(`Failed to ${editingCategory ? "update" : "create"} category.`, { id: toastId });
+      setError(`Failed to ${editingCategory ? "update" : "create"} category. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (category: Category) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete the category "${category.name}"?`
-      )
-    ) {
-      return;
-    }
+    if (!window.confirm(`Are you sure you want to delete the category "${category.name}"?`)) return;
 
+    const toastId = toast.loading("Deleting category...");
     try {
       setLoading(true);
       await apiService.deleteCategory(category.id);
+      toast.success("Category deleted!", { id: toastId });
       await fetchCategories();
     } catch (err) {
+      toast.error("Failed to delete category.", { id: toastId });
       setError("Failed to delete category. Please try again.");
     } finally {
       setLoading(false);
@@ -123,7 +122,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
       <Card>
         <CardHeader className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Categories</h1>
-          {isAuthenticated && (
+          {isAdmin && (
             <Button
               color="primary"
               startContent={<Plus size={16} />}
@@ -144,9 +143,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
           <Table
             aria-label="Categories table"
             isHeaderSticky
-            classNames={{
-              wrapper: "max-h-[600px]",
-            }}
+            classNames={{ wrapper: "max-h-[600px]" }}
           >
             <TableHeader>
               <TableColumn>NAME</TableColumn>
@@ -162,7 +159,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
                   <TableCell>{category.name}</TableCell>
                   <TableCell>{category.postCount || 0}</TableCell>
                   <TableCell>
-                    {isAuthenticated ? (
+                    {isAdmin ? (
                       <div className="flex gap-2">
                         <Button
                           isIconOnly
@@ -185,18 +182,14 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
                             color="danger"
                             size="sm"
                             onClick={() => handleDelete(category)}
-                            isDisabled={
-                              category?.postCount
-                                ? category.postCount > 0
-                                : false
-                            }
+                            isDisabled={category?.postCount ? category.postCount > 0 : false}
                           >
                             <Trash2 size={16} />
                           </Button>
                         </Tooltip>
                       </div>
                     ) : (
-                      <span>-</span>
+                      <span className="text-default-400 text-sm">—</span>
                     )}
                   </TableCell>
                 </TableRow>
@@ -223,11 +216,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
             <Button variant="flat" onClick={handleModalClose}>
               Cancel
             </Button>
-            <Button
-              color="primary"
-              onClick={handleAddEdit}
-              isLoading={isSubmitting}
-            >
+            <Button color="primary" onClick={handleAddEdit} isLoading={isSubmitting}>
               {editingCategory ? "Update" : "Add"}
             </Button>
           </ModalFooter>
