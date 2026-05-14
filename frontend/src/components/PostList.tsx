@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, useNavigate, useNavigation } from 'react-router-dom';
-import { Card, CardBody, CardFooter, CardHeader, Chip, Pagination, Select, SelectItem } from '@nextui-org/react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardBody, CardFooter, CardHeader, Chip } from '@nextui-org/react';
 import { Post } from '../services/apiService';
 import { Calendar, Clock, Tag, BookOpen } from 'lucide-react';
 import DOMPurify from 'dompurify';
@@ -19,20 +19,8 @@ const PostList: React.FC<PostListProps> = ({
   posts,
   loading,
   error,
-  page,
-  sortBy,
-  onPageChange,
-  onSortChange,
 }) => {
- 
   const navigate = useNavigate();
- 
-  const sortOptions = [
-    { value: "createdAt,desc", label: "Newest First" },
-    { value: "createdAt,asc", label: "Oldest First" },
-    { value: "title,asc", label: "Title A-Z" },
-    { value: "title,desc", label: "Title Z-A" },
-  ];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -42,35 +30,18 @@ const PostList: React.FC<PostListProps> = ({
     });
   };
 
-  const createSanitizedHTML = (content: string) => {
-    return {
-      __html: DOMPurify.sanitize(content, {
-        ALLOWED_TAGS: ['p', 'strong', 'em', 'br'],
-        ALLOWED_ATTR: []
-      })
-    };
-  };
-
   const createExcerpt = (content: string) => {
-    // First sanitize the HTML
     const sanitizedContent = DOMPurify.sanitize(content, {
       ALLOWED_TAGS: ['p', 'strong', 'em', 'br'],
       ALLOWED_ATTR: []
     });
-    
-    // Create a temporary div to parse the HTML
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = sanitizedContent;
-    
-    // Get the text content and limit it
     let textContent = tempDiv.textContent || tempDiv.innerText || '';
     textContent = textContent.trim();
-    
-    // Limit to roughly 200 characters, ending at the last complete word
     if (textContent.length > 200) {
       textContent = textContent.substring(0, 200).split(' ').slice(0, -1).join(' ') + '...';
     }
-    
     return textContent;
   };
 
@@ -88,21 +59,6 @@ const PostList: React.FC<PostListProps> = ({
 
   return (
     <div className="w-full space-y-6">
-      {/* <div className="flex justify-end mb-4">
-        <Select
-          label="Sort by"
-          selectedKeys={[sortBy]}
-          className="max-w-xs"
-          onChange={(e) => onSortChange(e.target.value)}
-        >
-          {sortOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </Select>
-      </div> */}
-
       {loading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, index) => (
@@ -116,32 +72,31 @@ const PostList: React.FC<PostListProps> = ({
         </div>
       ) : (
         <>
-
-        {posts?.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-6 mb-4">
-              <BookOpen size={40} className="text-gray-400 dark:text-gray-500" />
+          {posts?.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-6 mb-4">
+                <BookOpen size={40} className="text-gray-400 dark:text-gray-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                No posts found
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-sm">
+                Try adjusting your search or filters to find what you're looking for.
+              </p>
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              No posts found
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-sm">
-              Try adjusting your search or filters to find what you're looking for.
-            </p>
-          </div>
-        )}
+          )}
           <div className="space-y-4">
             {posts?.map((post) => (
               <Card key={post.id} className="w-full p-2 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer" isPressable={true} onPress={() => navToPostPage(post)}>
-                <CardHeader className="flex gap-3">                 
-                    <div className='flex flex-col'>
+                <CardHeader className="flex gap-3">
+                  <div className='flex flex-col'>
                     <h2 className="text-xl font-bold text-left">
                       {post.title}
                     </h2>
                     <p className="text-small text-default-500">
                       by {post.author?.name}
-                    </p>                
-                    </div>
+                    </p>
+                  </div>
                 </CardHeader>
                 <CardBody>
                   <p className="line-clamp-3">
@@ -158,9 +113,7 @@ const PostList: React.FC<PostListProps> = ({
                     {post.readingTime} min read
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Chip
-                      className="bg-primary-100 text-primary"
-                    >
+                    <Chip className="bg-primary-100 text-primary">
                       {post.category.name}
                     </Chip>
                     {post.tags.map((tag) => (
@@ -177,17 +130,6 @@ const PostList: React.FC<PostListProps> = ({
               </Card>
             ))}
           </div>
-
-          {/* {posts && posts.totalPages > 1 && (
-            <div className="flex justify-center mt-6">
-              <Pagination
-                total={posts.totalPages}
-                page={page}
-                onChange={onPageChange}
-                showControls
-              />
-            </div>
-          )} */}
         </>
       )}
     </div>

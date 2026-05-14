@@ -29,7 +29,7 @@ interface TagsPageProps {
   isAuthenticated: boolean;
 }
 
-const TagsPage: React.FC<TagsPageProps> = ({ isAuthenticated }) => {
+const TagsPage: React.FC<TagsPageProps> = ({}) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
 

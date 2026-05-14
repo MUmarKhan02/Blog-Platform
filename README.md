@@ -1,126 +1,154 @@
-# Blog Platform – Full Stack Application
+# Khan's Blog Platform
 
-A **full-stack blog platform** built with **Spring Boot (Java)** for the backend and **React (TypeScript + Vite + Tailwind CSS)** for the frontend, using **PostgreSQL / MySQL** as the database.
+A **full-stack blog platform** built with **Spring Boot (Java 21)** on the backend and **React (TypeScript + Vite + Tailwind CSS)** on the frontend, deployed on **AWS**.
 
-This project demonstrates:
+🌐 **Live Demo:** [https://d3djg0s7uij4hb.cloudfront.net](https://d3djg0s7uij4hb.cloudfront.net)
 
-- REST API development  
-- User Authentication (JWT + Refresh Token)  
-- Clean Architecture  
-- Modern Frontend Integration  
-- Create / Edit Posts  
-- Draft Posts (or publish after editing)  
-- Categories and Tags  
-- Light / Dark Mode UI  
+---
+
+## Features
+
+- **Authentication** — JWT-based login and registration with refresh tokens
+- **Role-Based Access Control** — Admin users can manage categories and tags; authors can edit/delete their own posts
+- **Rich Text Editor** — TipTap-powered editor with headings, bold, italic, bullet/ordered lists
+- **Post Management** — Create, edit, delete, and draft posts with reading time estimation
+- **Categories & Tags** — Filter posts by category and tag on the home page
+- **Search** — Debounced real-time search across post titles and content
+- **Dark / Light Mode** — Full theme toggle with persistent preference
+- **Toast Notifications** — Real-time feedback on all user actions
+- **Password Validation** — Live checklist enforcing strength requirements on registration
+- **Profile Page** — View your published posts and account details
+- **404 Page** — Custom not-found page with navigation options
+- **Empty States** — Friendly UI when no posts match filters or search
+- **Loading Skeletons** — Smooth loading states for post lists
 
 ---
 
 ## Tech Stack
 
-**Backend:**
+### Backend
+- Java 21
+- Spring Boot 3
+- Spring Security (JWT + Refresh Token)
+- JPA / Hibernate
+- Maven
+- PostgreSQL
 
-- Java 17+  
-- Spring Boot  
-- Spring Security (JWT + Refresh Token)  
-- JPA / Hibernate  
-- Maven  
-- MySQL / PostgreSQL  
-- Docker (optional)  
+### Frontend
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS + NextUI
+- TipTap (rich text editor)
+- Axios
+- React Hot Toast
+- DOMPurify
 
-**Frontend:**
-
-- React  
-- TypeScript  
-- Vite  
-- Tailwind CSS  
-- Axios  
-
----
-
-## Project Structure
-
-blog-platform/
-├── blog/ # Spring Boot backend
-├── frontend/ # React frontend
-└── README.md
-
+### Infrastructure (AWS)
+- **CloudFront** — CDN for frontend delivery
+- **S3** — Static frontend hosting
+- **Elastic Beanstalk** — Spring Boot backend hosting
+- **RDS (PostgreSQL)** — Managed production database
 
 ---
 
-## Backend Setup (Spring Boot)
+## Local Development Setup
 
 ### Requirements
+- Java 21+
+- Maven
+- Node.js (v18+)
+- Docker (for local PostgreSQL)
 
-- Java 17+  
-- Maven  
+> **Note:** IntelliJ is recommended for the backend — it has built-in Lombok support.
 
-> **Note:** IntelliJ is recommended as it has built-in support for Lombok. Other IDEs (e.g., VSCode) require extra setup for Lombok.
+### Backend Setup
 
-### Setup
+1. Start the local database:
+```bash
+docker-compose up -d
+```
 
-1. Navigate to the backend folder:
-
+2. Navigate to the backend folder:
 ```bash
 cd blog
 ```
-2. Run the backend:
 
-```bash
-mvn spring-boot:run
+3. Add environment variables in your IntelliJ run configuration:
 ```
-3. Backend will start on
-```bash http://localhost:8080```
+JWT_SECRET=your-secret-key-at-least-32-characters
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/postgres
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=your-password
+```
 
-## Frontend Setup (React)
+4. Run the backend:
+```bash
+./mvnw spring-boot:run
+```
 
-### Requirements
+Backend runs on `http://localhost:8080`
 
-- Node.js (v16+)  
-- npm (or yarn)  
-
-### Setup
+### Frontend Setup
 
 1. Navigate to the frontend folder:
-
 ```bash
 cd frontend
 ```
-2. Install dependencies:
 
+2. Install dependencies:
 ```bash
 npm install
 ```
-3. Create a .env file in the frontend folder with the backend API URL:
 
-```bash
+3. Create a `.env` file:
+```
 VITE_API_URL=http://localhost:8080
 ```
-4. Start the development server:
 
+4. Start the dev server:
 ```bash
 npm run dev
 ```
-5. The frontend will be available at:
 
-```bash
-http://localhost:5173
+Frontend runs on `http://localhost:5173`
+
+---
+
+## Admin Access
+
+By default all registered users have the `USER` role. To grant admin access, run the following SQL against the database:
+
+```sql
+UPDATE users SET role = 'ADMIN' WHERE email = 'your@email.com';
 ```
-# Frontend and Backend Together
-1. Start backend
 
+Admin users can create, edit, and delete categories and tags.
+
+---
+
+## Deployment
+
+The application is deployed on AWS:
+
+| Service | Purpose |
+|---|---|
+| S3 | Frontend static file hosting |
+| CloudFront | HTTPS CDN, routes `/api/*` to backend |
+| Elastic Beanstalk | Spring Boot JAR hosting (t3.micro) |
+| RDS PostgreSQL | Production database (db.t3.micro) |
+
+### Deploy Frontend
 ```bash
-cd ../blog
-mvn spring-boot:run
+cd frontend
+npm run build
+# Upload dist/ contents to S3 bucket
+# Invalidate CloudFront cache: /*
 ```
-2. Start frontend in a separate terminal
 
-```bash npm run dev ```
-3. Open browser at
-```bash http://localhost:5173 ```
-
-
-## Future Changes or Improvements 
-- Adding admin or user roles for users to manage restrictions and realism
-- Email verification on registration via link or OTP
-- Password reset functionality
-- User profile page customization and avatar support
+### Deploy Backend
+```bash
+cd blog
+./mvnw package -DskipTests
+# Upload target/blog-0.0.1-SNAPSHOT.jar to Elastic Beanstalk
+```

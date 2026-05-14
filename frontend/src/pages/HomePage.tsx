@@ -139,7 +139,7 @@ const HomePage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 rounded-lg"
-                contentLeft={<Search className="text-gray-400" />}
+                startContent={<Search className="text-gray-400" />}
               />
             </div>
           </div>

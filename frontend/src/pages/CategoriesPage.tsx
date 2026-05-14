@@ -28,7 +28,7 @@ interface CategoriesPageProps {
   isAuthenticated: boolean;
 }
 
-const CategoriesPage: React.FC<CategoriesPageProps> = ({ isAuthenticated }) => {
+const CategoriesPage: React.FC<CategoriesPageProps> = ({}) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
 

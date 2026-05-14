@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('accesstoken');
-      const refreshToken = localStorage.getItem('refreshToken');
+
       if (storedToken) {
         try {
           // Validate token and fetch user profile
