@@ -18,6 +18,10 @@ jobs:
           java-version: "21"
           distribution: "corretto"
 
+      - name: Make mvnw executable
+        working-directory: blog
+        run: chmod +x mvnw
+
       - name: Build JAR
         working-directory: blog
         run: ./mvnw package -DskipTests
