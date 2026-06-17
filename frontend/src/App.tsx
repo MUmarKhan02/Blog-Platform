@@ -18,7 +18,7 @@ import ProfilePage from './pages/ProfilePage';
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
-
+ 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
